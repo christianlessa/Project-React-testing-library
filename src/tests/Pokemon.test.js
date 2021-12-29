@@ -1,43 +1,38 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import pokemons from '../data';
+import Pokemon from '../components/Pokemon';
 import renderWithRouter from './renderWithRouter';
-import App from '../App';
 
-describe('Testes Pokemon.js', () => {
+describe('Teste o componente <Pokemon.js />', () => {
+  beforeEach(() => renderWithRouter(
+    <Pokemon pokemon={ pokemons[0] } isFavorite showDetailsLink />,
+  ));
+
   it('Verifica se é renderizado um card com informações de determinado pokémon', () => {
-    renderWithRouter(<App />);
-    const pokemonName = screen.getByText(/pikachu/i);
+    const name = screen.getByText(/pikachu/i);
+    expect(name).toHaveTextContent(/Pikachu/i);
+
     const type = screen.getByTestId('pokemon-type');
-    const averageWeight = screen.getByText(/Average weight: 6.0 kg/i);
-    const img = screen.getByRole('img', { alt: /pikachu sprite/i });
-    expect(pokemonName).toBeInTheDocument();
-    expect(type.innerHTML).toEqual('Electric');
-    expect(averageWeight).toBeInTheDocument();
-    expect(img).toBeInTheDocument();
+    expect(type).toHaveTextContent(/Electric/i);
+
+    const weight = screen.getByTestId('pokemon-weight');
+    expect(weight).toHaveTextContent(/average weight: 6.0 kg/i);
+
+    const img = screen.getByAltText(/Pikachu sprite/i);
+    expect(img).toHaveAttribute(
+      'src',
+      'https://cdn2.bulbagarden.net/upload/b/b2/Spr_5b_025_m.png',
+    );
   });
 
-  it('Verifica se existe um link para ver detalhes do pokemon', () => {
-    renderWithRouter(<App />);
-    const link = screen.getByRole('link', { name: /more details/i });
-    expect(link.href).toBe('http://localhost/pokemons/25');
+  it('Verifica se na Pokédex possui um link de detalhes do Pokémon.', () => {
+    const moreDetails = screen.getByText(/More Details/i);
+    expect(moreDetails).toHaveAttribute('href', '/pokemons/25');
   });
 
-  it('Verifica se ao clicar no link detalhes, redireciona para a page correta', () => {
-    const { history } = renderWithRouter(<App />);
-    const link = screen.getByRole('link', { name: /more details/i });
-    userEvent.click(link);
-    expect(history.location.pathname).toBe('/pokemons/25');
-  });
-
-  it('Verifica se existe um ícone de estrela', () => {
-    const { history } = renderWithRouter(<App />);
-    history.push('/pokemons/25');
-    const checkbox = screen.getByLabelText('Pokémon favoritado?');
-    expect(checkbox).toBeInTheDocument();
-    userEvent.click(checkbox);
-    const icon = screen.getAllByRole('img');
-    expect(icon[2]).toBeInTheDocument();
+  it('Verifica se existe um ícone de estrela nos Pokémons favoritados', () => {
+    const favoritePokemon = screen.getByAltText(/Pikachu is marked as favorite/i);
+    expect(favoritePokemon).toHaveAttribute('src', '/star-icon.svg');
   });
 });
-// Requisito feito com ajuda do Denilson Santuchi.
